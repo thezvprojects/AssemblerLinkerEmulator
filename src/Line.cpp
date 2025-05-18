@@ -1,5 +1,4 @@
 #include "Line.h"
-#include <optional>
 
 using namespace std;
 
@@ -70,14 +69,14 @@ static AssemblyInstructionName getDirectiveInstructionType(const string &instruc
     if (instructionName == "csrwr")
         return AssemblyInstructionName::Csrwr;
 
-    // If none of the conditions are met, throw an exception
     throw std::invalid_argument("Unknown directive: " + instructionName);
 }
 
-Line::Line(int lineNumber, const string &type, const string &instructionName, const vector<string> &params) : lineNumber(lineNumber), parameters(params)
+Line::Line(int lineNumber, const string &type, const string &instructionName, const vector<ParametersElement> &params) : lineNumber(lineNumber)
 {
     asmOpType = type == "directive" ? AssemblyInstructionType::Directive : AssemblyInstructionType::Command;
     label = "";
+    parameters = params;
 
     try
     {
@@ -100,12 +99,12 @@ void Line::setLineNumber(int lineNumber)
     this->lineNumber = lineNumber;
 }
 
-vector<string> Line::getParameters() const
+vector<ParametersElement> Line::getParameters() const
 {
     return parameters;
 }
 
-void Line::setParameters(const vector<string> &parameters)
+void Line::setParameters(const vector<ParametersElement> &parameters)
 {
     this->parameters = parameters;
 }
@@ -156,12 +155,11 @@ string Line::toString() const
         << "Parameters: ";
     for (const auto &param : parameters)
     {
-        oss << param << " ";
+        oss << param.value << " ";
     }
     return oss.str();
 }
 
-// Overload the << operator
 ostream &operator<<(ostream &os, const Line &line)
 {
     return os << line.toString();

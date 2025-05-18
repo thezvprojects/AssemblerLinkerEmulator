@@ -3,8 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "../misc/parser.tab.h"
 #include "Line.h"
+#include "../misc/parser.tab.h"
 #include "LineProcessor.h"
 
 using namespace std;
@@ -13,7 +13,7 @@ using namespace std;
 extern FILE *yyin;
 
 // Global vector to store parameters
-vector<string> parameters;
+vector<ParametersElement> parameters;
 vector<Line> lines;
 char *label;
 int variable_type;
@@ -45,14 +45,13 @@ int main(int argc, char **argv)
     if (yyparse() == 0)
     {
         cout << "Parsing completed successfully." << endl;
-
+        cout << "Symbol table" << endl;
         LineProcessor *lineProcessor = new LineProcessor();
 
-        cout << "Parsed parameters:" << endl;
         for (const auto &line : lines)
         {
             lineProcessor->ProcessLine(line);
-            cout << "- " << line << endl;
+            // cout << "- " << line << endl;
         }
     }
     else

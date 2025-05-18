@@ -1,9 +1,11 @@
 %{
+#include "Line.h"
 #include "parser.tab.h"
 %}
 
 digit         [0-9]
 letter        [a-zA-Z]
+hexa          [0-9a-fA-F]
 
 %%
 
@@ -85,6 +87,19 @@ ${letter}({letter}|{digit})* {
     yylval.str = strdup(yytext);
     return PARAMETER;
 }
+
+
+0[xX]{hexa}+ {
+    yylval.str = strdup(yytext);
+    return HEXA_LITERAL;
+}
+
+
+{digit}+ {
+    yylval.str = strdup(yytext);
+    return LITERAL;
+}
+
 
 %%
 

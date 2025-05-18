@@ -83,12 +83,14 @@ extern int yydebug;
     ASMC_CSRWR = 289,
     COMMA = 290,
     NEWLINE = 291,
-    PARAMETER = 292,
-    LABEL = 293,
-    VALUE_OPERAND = 294,
-    MEM_REG_OPERAND = 295,
-    REG_VALUE = 296,
-    CSR_VALUE = 297
+    LABEL = 292,
+    PARAMETER = 293,
+    LITERAL = 294,
+    VALUE_OPERAND = 295,
+    MEM_REG_OPERAND = 296,
+    REG_VALUE = 297,
+    CSR_VALUE = 298,
+    HEXA_LITERAL = 299
   };
 #endif
 
@@ -99,8 +101,9 @@ union YYSTYPE
 #line 24 "misc/parser.y"
 
     char *str;  // string values type
+    ParametersElement* paramElements;
 
-#line 104 "misc/parser.tab.h"
+#line 107 "misc/parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

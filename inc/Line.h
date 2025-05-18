@@ -9,6 +9,22 @@
 
 using namespace std;
 
+struct ParametersElement
+{
+    enum ParamType
+    {
+        SYMBOL,
+        LITERAL,
+        HEXA_LITERAL,
+        REGISTER,
+        VALUEOPERAND,
+        MEMREGOPERAND,
+        SECTION
+    } type;
+    string value;
+    ParametersElement(ParamType t, std::string val) : type(t), value(val) {}
+};
+
 enum AssemblyInstructionType
 {
     Directive,
@@ -60,12 +76,12 @@ private:
     int instructionType;
     int lineNumber;
     string label;
-    vector<string> parameters;
+    vector<ParametersElement> parameters;
     AssemblyInstructionName asmInstructionName;
     AssemblyInstructionType asmOpType;
 
 public:
-    Line(int number, const string &type, const string &instructionName, const vector<string> &params);
+    Line(int number, const string &type, const string &instructionName, const vector<ParametersElement> &params);
 
     int getLineNumber() const;
     void setLineNumber(int lineNumber);
@@ -74,8 +90,8 @@ public:
     void setLabel(const string &lbl);
 
     // params
-    vector<string> getParameters() const;
-    void setParameters(const vector<string> &parameters);
+    vector<ParametersElement> getParameters() const;
+    void setParameters(const vector<ParametersElement> &parameters);
 
     // assembly operation and directive
     AssemblyInstructionType getAssemblyOpType() const;
@@ -85,7 +101,7 @@ public:
 
     // print stuff
     string toString() const;
-    friend std::ostream &operator<<(std::ostream &os, const Line &line);
+    friend ostream &operator<<(ostream &os, const Line &line);
 };
 
-#endif // LINE_H
+#endif

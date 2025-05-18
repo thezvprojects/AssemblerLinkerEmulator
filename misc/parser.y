@@ -6,7 +6,7 @@
 #include "Line.h"
 
 // Declare external vector to store parameters
-extern std::vector<std::string> parameters;
+extern std::vector<ParametersElement> parameters;
 extern int variable_type;
 extern std::vector<Line> lines;
 
@@ -23,6 +23,7 @@ int lineCount = 0;
 
 %union {
     char *str;  // string values type
+    ParametersElement* paramElements;
 }
 
 %token ASMD_GLOBAL ASMD_EXTERN ASMD_SECTION ASMD_WORD ASMD_SKIP ASMD_END
@@ -32,10 +33,11 @@ int lineCount = 0;
 %token ASMC_SHL ASMC_SHR ASMC_LD ASMC_ST ASMC_CSRRD ASMC_CSRWR
 %token COMMA NEWLINE
 
-%token <str> PARAMETER LABEL VALUE_OPERAND MEM_REG_OPERAND REG_VALUE CSR_VALUE
+%token <str> LABEL PARAMETER LITERAL VALUE_OPERAND MEM_REG_OPERAND REG_VALUE CSR_VALUE HEXA_LITERAL
 
-%type <str> parameter label reg_value_operand csr_value_operand
+%type <paramElements> parameter_list parameter reg_value_operand csr_value_operand symbol_and_literal operand
 
+%type <str> label
 %%
 
 program:
@@ -86,7 +88,7 @@ directive:
     global parameter_list { lines.emplace_back(lineCount++, "directive", "global", parameters); }
     | extern parameter_list { lines.emplace_back(lineCount++, "directive", "extern", parameters); }
     | section section_name { lines.emplace_back(lineCount++, "directive", "section", parameters); }
-    | word parameter_list { lines.emplace_back(lineCount++, "directive", "word", parameters); }
+    | word symbol_and_literal_list { lines.emplace_back(lineCount++, "directive", "word", parameters); }
     | skip parameter_list { lines.emplace_back(lineCount++, "directive", "skip", parameters); }
     | end
     {
@@ -97,15 +99,26 @@ directive:
 
 /* zapamti da ovde ide jednom parameter sve ostalo list */
 parameter_list:
-    parameter_list COMMA parameter { parameters.push_back($3); }
-    | parameter { parameters.push_back($1); }
+    parameter_list COMMA parameter { parameters.push_back(*$3); delete $3; }
+    | parameter { parameters.push_back(*$1); delete $1; }
+    ;
+
+symbol_and_literal_list:
+    symbol_and_literal_list COMMA symbol_and_literal { parameters.push_back(*$3); delete $3; }
+    | symbol_and_literal { parameters.push_back(*$1); delete $1; }
+    ;
+
+symbol_and_literal:
+    parameter { parameters.push_back(*$1); }
+    | LITERAL { $$ = new ParametersElement(ParametersElement::HEXA_LITERAL, std::string($1)); }
+    | HEXA_LITERAL { $$ = new ParametersElement(ParametersElement::HEXA_LITERAL, std::string($1)); }
     ;
 
 section_name:
-    parameter { parameters.push_back($1); }
+    parameter { parameters.push_back(*$1); delete $1; }
     ;
 
-parameter: PARAMETER { $$ = $1; }
+parameter: PARAMETER { $$ = new ParametersElement(ParametersElement::SYMBOL, std::string($1)); }
     ;
 
 global:
@@ -162,15 +175,15 @@ command:
 ;
 
 operand:
-    VALUE_OPERAND { parameters.push_back($1); }
-    | MEM_REG_OPERAND { parameters.push_back($1); }
+    VALUE_OPERAND { $$ = new ParametersElement(ParametersElement::VALUEOPERAND, std::string($1));}
+    | MEM_REG_OPERAND { $$ = new ParametersElement(ParametersElement::MEMREGOPERAND, std::string($1)); }
     ;
 
 reg_value_operand:
-    REG_VALUE { parameters.push_back($1); }
+    REG_VALUE { $$ = new ParametersElement(ParametersElement::REGISTER, std::string($1)); }
 
 csr_value_operand:
-    CSR_VALUE { parameters.push_back($1); }
+    CSR_VALUE { $$ = new ParametersElement(ParametersElement::REGISTER, std::string($1)); }
 
 halt:
     ASMC_HALT { count_asmc++; }
